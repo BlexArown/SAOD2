@@ -20,8 +20,8 @@ Vertex *create_vertex(int Data)
     return newVertex;
 }
 
-// ----- ОБХОДЫ -----
-void Left_to_Right(Vertex *p) // in-order (слева направо)
+// Обход слева направо
+void Left_to_Right(Vertex *p)
 {
     if (p != NULL)
     {
@@ -31,7 +31,7 @@ void Left_to_Right(Vertex *p) // in-order (слева направо)
     }
 }
 
-void Top_to_Bottom(Vertex *p) // pre-order (сверху вниз)
+void Top_to_Bottom(Vertex *p) // сверху вниз
 {
     if (p != NULL)
     {
@@ -41,7 +41,7 @@ void Top_to_Bottom(Vertex *p) // pre-order (сверху вниз)
     }
 }
 
-// ----- АНАЛИЗ -----
+// подсчеты
 int Size(Vertex *p)
 {
     if (p == NULL) return 0;
@@ -82,7 +82,7 @@ float AverageHeight(Vertex *root)
     return (float)total_path_length / tree_size;
 }
 
-// ----- ГЕНЕРАЦИЯ -----
+// генерим
 void generator(int arr[], int n)
 {
     srand(time(NULL));
@@ -134,7 +134,7 @@ int insertSort(int n, int A[])
     return 0;
 }
 
-// ----- ПОСТРОЕНИЕ ДЕРЕВЬЕВ -----
+// стройка
 Vertex *BuildISDP(int L, int R, int A[])
 {
     if (L > R) return NULL;
@@ -187,7 +187,7 @@ void PrintStatString(const char *name, Vertex *p)
            AverageHeight(p));
 }
 
-// ----- УДАЛЕНИЕ -----
+// удаление вершин
 void deleteNode(Vertex **p, int X)
 {
     while (*p != NULL && (*p)->Data != X)
@@ -200,11 +200,11 @@ void deleteNode(Vertex **p, int X)
 
     Vertex *q = *p;
 
-    if (q->Left == NULL) // нет левого сына
+    if (q->Left == NULL) // нет левого
     {
         *p = q->Right;
     }
-    else if (q->Right == NULL) // нет правого сына
+    else if (q->Right == NULL) // нет правого
     {
         *p = q->Left;
     }
@@ -228,7 +228,6 @@ void deleteNode(Vertex **p, int X)
     free(q);
 }
 
-// ----- MAIN -----
 int main()
 {
     system("chcp 65001 > nul");
@@ -262,7 +261,7 @@ int main()
     PrintStatString("SDP (double)", SDP1Root);
     PrintStatString("SDP (recursive)", SDP2Root);
 
-    // ---------------- УДАЛЕНИЕ ----------------
+    // удаляем
     printf("\n\nВыбрано СДП построенное рекурсивно.\n");
     printf("Обход сверху вниз перед удалениями: ");
     Top_to_Bottom(SDP2Root);
@@ -283,3 +282,4 @@ int main()
 
     return 0;
 }
+
