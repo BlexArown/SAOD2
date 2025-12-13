@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <locale.h>
+#include <string.h>
 #include "db.h"
 
 int main() {
@@ -14,7 +15,7 @@ int main() {
     int isLoaded = 0;
     int isSorted = 0;
 
-    // Загружаем базу в память один раз
+    
     LoadBase(&base, &lbase);
     isLoaded = 1;
 
@@ -25,23 +26,28 @@ int main() {
         printf("1 - Показать базу данных ДО сортировки\n");
         printf("2 - Сортировка по году и автору\n");
         printf("3 - Поиск по году (только после сортировки по году)\n");
+	printf("4 - Анализ и кодирование базы методом Гильберта–Мура\n");
         printf("0 - Выход\n");
         printf("Выбор: ");
         scanf(" %c", &choice);
 
         switch (choice) {
             case '1':
-                if (isLoaded) {
-                    system("chcp 866 > nul");
-                    PrintPages(lbase);
-                    system("chcp 65001 > nul");
-                }
-                break;
+    		if (isLoaded) {
+        	    if (isSorted) {
+            		printf("Ошибка: база уже отсортирована — показать \"ДО сортировки\" нельзя.\n");
+        	    } else {
+            		system("chcp 866 > nul");
+            		PrintPages(lbase);
+            		system("chcp 65001 > nul");
+        	    }
+    		}
+    		break;
 
             case '2':
                 if (isLoaded) {
                     DigitalSort(&lbase);
-                    // пересобираем массив для поиска
+                    
                     mas = (struct record**)malloc(N * sizeof(struct record*));
                     list *ptr = lbase;
                     for (int i = 0; i < N && ptr != NULL; i++) {
@@ -67,40 +73,54 @@ int main() {
                             system("chcp 866 > nul");
                             PrintQueue(q);
                             system("chcp 65001 > nul");
-			    // --- Новый блок: построение дерева из очереди ---
-			    Node *treeRoot = NULL;
+			    BTreeNode *btree = NULL;
 			    list *qptr = q.head;
-			    // строим дерево по числу страниц
 			    while (qptr) {
-    			    	treeRoot = InsertTree(treeRoot, qptr->data);
+    			    	BTreeInsert(&btree, qptr->data);
     				qptr = qptr->next;
 			    }
 	                    system("chcp 65001 > nul");
-			    printf("\n\n===== Дерево по числу страниц (in-order) =====\n");
-			    printf("%-15s %-25s %-20s %-6s %-12s\n",
-       			    "Автор", "Заглавие", "Издательство", "Стр.", "Год");
+			    printf("\n\n===== B-ДЕРЕВО по числу страниц =====\n");
+			    printf("%-15s %-25s %-20s %-6s %-12s\n", "Автор", "Заглавие", "Издательство", "Стр.", "Год");
 			    system("chcp 866 > nul");
-			    PrintTreeInOrder(treeRoot);
-			    // --- Поиск в дереве ---
+			    BTreePrintInOrder(btree, 0);
 			    system("chcp 65001 > nul");
 			    int pages;
 			    printf("\nВведите количество страниц для поиска: ");
 			    scanf("%d", &pages);
-			    struct record *found = SearchInTree(treeRoot, pages);
-			    if (found) {
-    				printf("\nНайдена запись:\n");
-    				system("chcp 866 > nul");
-    				printf("%-15s %-25s %-20s %-6d %-12d\n",
-           			found->author, found->title, found->publisher,
-           			found->num_of_page, found->year);
+			    queue found = BTreeSearchAll(btree, pages);
+			    if (!found.head) {
+    				printf("Записей с таким числом страниц не найдено.\n");
 			    } else {
-    				printf("Запись с таким числом страниц не найдена.\n");
-			    }
-			    FreeTree(treeRoot);
+    				system("chcp 65001 > nul");
+    				printf("\nНайденные записи:\n");
+    				printf("%-4s %-15s %-25s %-20s %-6s %-12s\n", "№", "Автор", "Заглавие", "Издательство", "Стр.", "Год");
+    			    system("chcp 866 > nul");
+    			    list *p = found.head;
+    			    int i = 1;
+    			    while (p) {
+        		    	printf("%-4d %-15s %-25s %-20s %-6d %-12d\n", i++, p->data->author, p->data->title, p->data->publisher, p->data->num_of_page, p->data->year);
+        		 	p = p->next;
+    			    }
+    			    
+    			    p = found.head;
+     			    while (p) {
+        			list *tmp = p;
+        			p = p->next;
+        			free(tmp);
+    			    }
+			}
+			BTreeFree(btree);
 			    system("chcp 65001 > nul");
                      }
                  }
                  break;
+
+	    case '4':
+		AnalyzeDatabase_GilbertMoore();
+    		EncodeDatabase_GilbertMoore();
+    		break;
+
             case '0':
                 printf("Выход...\n");
                 break;

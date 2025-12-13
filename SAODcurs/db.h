@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #define N 4000
+#define BTREE_T 2
 
 struct record {
     char author[12];
@@ -18,7 +19,7 @@ typedef struct list {
     struct record *data;
     struct list *next;
     struct list *prior;
-    int pos; // позиция в отсорт массиве (для вывода результатов поиска)
+    int pos; 
 } list;
 
 typedef struct queue {
@@ -32,16 +33,24 @@ void PrintPages(list *head);
 queue SearchQueue(struct record **A, int year);
 void PrintQueue(queue q);
 
-// ======== Двоичное Б-дерево (по num_of_page) ========
-typedef struct Node {
-    struct record *data;    // указатель на запись
-    struct Node *left;
-    struct Node *right;
-} Node;
+typedef struct BTreeNode {
+    int n;
+    int leaf;
+    struct record *keys[2*BTREE_T - 1];
+    struct BTreeNode *child[2*BTREE_T];
+} BTreeNode;
 
-Node* InsertTree(Node *root, struct record *rec);
-void PrintTreeInOrder(Node *root);
-struct record* SearchInTree(Node *root, int pages);
-void FreeTree(Node *root);
+BTreeNode* BTreeCreateNode(int leaf);
+void BTreeSplitChild(BTreeNode *x, int i);
+void BTreeInsert(BTreeNode **root, struct record *rec);
+void BTreeInsertNonFull(BTreeNode *x, struct record *rec);
+struct record* BTreeSearch(BTreeNode *x, int pages);
+void BTreePrint(BTreeNode *root, int depth);
+void BTreeFree(BTreeNode *x);
+void BTreePrintInOrder(BTreeNode *root, int depth);
+queue BTreeSearchAll(BTreeNode *root, int pages);
+
+void EncodeDatabase_GilbertMoore();
+void AnalyzeDatabase_GilbertMoore();
 
 #endif
